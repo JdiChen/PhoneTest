@@ -1,0 +1,15 @@
+PhoneRecents:
+  contacts_bt: 'Contacts'
+
+PhoneContact:
+#  create_bt: 'CREATE NEW CONTACT'
+  create_bt: 'Create new contact'
+
+PhoneCreateContact:
+  save: 'Save'
+  first: 'First name'
+  last: 'Last name'
+  phone: 'Phone'
+
+Home:
+  phone_bt: 'Phone'
