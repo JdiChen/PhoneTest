@@ -1,3 +1,5 @@
+import allure
+
 from page.all_phone_page import PhoneRecents
 from page.base_page import BasePage
 
@@ -11,7 +13,8 @@ class Home(BasePage):
         主页面点击电话图标，进入电话应用界面
         :return: 电话通话记录界面
         """
-        self._driver.press('home')
-        self.click(self._config['Home']['phone_bt'])
-        return PhoneRecents(self._driver)
+        with allure.step('桌面点击电话图标'):
+            self._driver.press('home')
+            self.click(self._config['Home']['phone_bt'])
+        return PhoneRecents()
 

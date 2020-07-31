@@ -1,8 +1,6 @@
-import os
-import logging
-import time
+import os,logging,time,yaml
+import uiautomator2 as u2
 
-import yaml
 
 
 def run_cmd(cmd):
@@ -48,7 +46,7 @@ def _get_device_log(sn):
     fmat = logging.Formatter("%(asctime)s,%(name)s,%(levelname)s : %(message)s")
     consore = logging.StreamHandler()
     consore.setFormatter(fmat)
-    consore.setLevel(logging.DEBUG)
+    consore.setLevel(logging.NOTSET)
 
     file = logging.FileHandler(log_file(sn), 'w+')
     file.setLevel(logging.DEBUG)
@@ -56,6 +54,7 @@ def _get_device_log(sn):
 
     logger.addHandler(consore)
     logger.addHandler(file)
+    u2.logger.addHandler(file)
     return logger
 
 

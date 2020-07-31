@@ -1,3 +1,5 @@
+import allure
+
 from page.base_page import BasePage
 
 
@@ -11,8 +13,9 @@ class PhoneRecents(BasePage):
         点击联系人图标
         :return: 联系人列表界面
         """
-        self.click(self._config['PhoneRecents']['contacts_bt'])
-        return PhoneContact(self._driver)
+        with allure.step('点击联系人图标,进入联系人列表界面'):
+            self.click(self._config['PhoneRecents']['contacts_bt'])
+        return PhoneContact()
 
 
 class PhoneContact(BasePage):
@@ -25,8 +28,10 @@ class PhoneContact(BasePage):
         点击创建联系人
         :return: 创建联系人界面
         """
-        self.click(self._config['PhoneContact']['create_bt'])
-        return PhoneCreateContact(self._driver)
+        # print('---------------self.sn is %s-----------------'% self.sn)
+        with allure.step("点击创建联系人，进入创建联系人界面"):
+            self.click(self._config['PhoneContact']['create_bt'])
+        return PhoneCreateContact()
 
 
 class PhoneCreateContact(BasePage):
@@ -39,7 +44,8 @@ class PhoneCreateContact(BasePage):
         点击保存按钮
         :return:
         """
-        self.click(self._config['PhoneCreateContact']['save'])
+        with allure.step('保存联系人'):
+            self.click(self._config['PhoneCreateContact']['save'])
 
     def input_mesg(self, first_name, last_name, number):
         """
@@ -49,6 +55,7 @@ class PhoneCreateContact(BasePage):
         :param number: 电话号码
         :return:
         """
-        self.sendkey(self._config['PhoneCreateContact']['first'], first_name)
-        self.sendkey(self._config['PhoneCreateContact']['last'], last_name)
-        self.sendkey(self._config['PhoneCreateContact']['phone'], number)
+        with allure.step('输入联系人信息'):
+            self.sendkey(self._config['PhoneCreateContact']['first'], first_name)
+            self.sendkey(self._config['PhoneCreateContact']['last'], last_name)
+            self.sendkey(self._config['PhoneCreateContact']['phone'], number)

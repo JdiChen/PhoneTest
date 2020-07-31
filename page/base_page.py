@@ -1,42 +1,29 @@
 import os
 import time
 
+import allure
 import uiautomator2 as u2
 from config.depend import get_logger, read_yaml
 import logging
 
-# 设备号，在conftest.py文件中读取
 SN = None
 
 
-class BasePage:
-    # 设备
-    _driver = None
-    # 配置文件
-    # _config = read_yaml(r'E:\PythonProject\Learn\po_test\data\test_data.yaml')
-    _config = read_yaml(os.path.join('..', 'data', 'test_data.yaml'))
-    # log
+class _Driver:
+    """
+    单独将drvier建立一个类，
+    """
     _log: logging = None
-    # 异常弹框的text列表
-    _black_list = ['OK', 'ALLOW ALL THE TIME', 'Keep off']
-    # 最大异常处理次数
-    _error_max_count = 3
-    # 异常处理次数
-    _error_count = 0
+    _driver: u2.Device = None
+    _instancn = None
+    _isinit = False
 
-    def __init__(self, driver=None):
-        """
-        初始化driver,运行时进入homepage
-        """
-        if driver is None:
+    def __init__(self):
+        if not self._isinit:
             self._log = get_logger(SN)
             self._driver = u2.connect(SN)
             self._log.info('connect done')
-            # 隐式等待10S
-            self._driver.implicitly_wait(10)
-            # self._driver.click_post_delay(3)
-            # self._log.info("device info:", *self._driver.info)
-
+            self._log.info(f'devices info:{self._driver.device_info}\n{self._driver.info}')
             # 获取设备属性，如果是灭屏状态，则亮屏解锁
             if not self._driver.info['screenOn']:
                 # 解锁
@@ -44,10 +31,37 @@ class BasePage:
                 self._log.info('device is unlock')
             else:
                 self._log.info('device is screen on')
+            self._isinit = True
 
-            self._driver.press('home')
-        else:
-            self._driver = driver
+    def get_driver_and_log(self):
+        return self._driver, self._log
+
+    def __new__(cls, *args, **kwargs):
+        if cls._instancn is None:
+            cls._instancn = super().__new__(cls, *args, **kwargs)
+        return cls._instancn
+
+
+class BasePage:
+    # 设备
+    _driver: u2.Device = None
+    # 配置文件
+    _config = read_yaml(os.path.join(os.getcwd(), 'data', 'test_data.yaml'))
+    # log
+    _log: logging = None
+    # 异常弹框的text列表
+    _black_list = ['OK', 'ALLOW ALL THE TIME', 'Keep off']
+    # 最大异常处理次数
+    _error_max_count = 5
+    # 异常处理次数
+    _error_count = 0
+
+    def __init__(self, driver=None):
+        """
+        初始化driver,运行时进入homepage,使用driver类，单例出driver和log
+        """
+
+        self._driver, self._log = _Driver().get_driver_and_log()
 
     def __find_ele(self, locator: str):
         """
@@ -58,7 +72,7 @@ class BasePage:
 
         ele = []
         # 查找元素前等待，使页面加载完成，防止执行太快而定位不到元素或者过早的定位到元素
-        time.sleep(3)
+        time.sleep(1)
         # 查找元素，如果找不到就捕获异常
         self._log.debug('try find element %s' % locator)
         if locator.startswith('//') and len(self._driver.xpath(locator)) > 0:
@@ -91,7 +105,8 @@ class BasePage:
             # 找到后设置异常处理次数为默认0
             ele = self.__find_ele(locator)
             if len(ele) == 0:
-                raise ValueError('not find ele')
+                # raise ValueError('not find ele')
+                assert False,'element not find'
             else:
                 # 这里是因为在xpath中不会有下标，只会返回一个元素
                 # 不判断会造成错误
@@ -117,7 +132,8 @@ class BasePage:
                     # 处理完弹框后，调用自身，继续查找目标元素
                     return self.find(locator, index)
             self._log.info('no black text in this page')
-            raise e
+            self.screenshot()
+            assert False,e
 
     def rool_find(self, ele):
         """
@@ -126,19 +142,39 @@ class BasePage:
         """
         pass
 
-    def click(self, name):
+    def click(self, name, index=0):
         """
         封装点击
         :param name: 定位的字符串
+        :param index: 定位下标，当有多个相同元素时使用
         :return:
         """
-        self._driver(text=name).click()
+        self.find(name, index).click()
 
-    def sendkey(self, name, mesg):
+    def sendkey(self, name, mesg, index=0):
         """
         封装输入字符
         :param name: 定位的字符串
         :param mesg: 需要输入的文本
+        :param index: 定位下标，当有多个相同元素时使用
         :return:
         """
-        self._driver(text=name).send_keys(mesg)
+        self.find(name, index).send_keys(mesg)
+
+    def screenshot(self):
+        """
+        截图并附加到测试报告中
+        :return:
+        """
+        picture_file = os.path.join(os.getcwd(), 'tmp_picture.png')
+
+        try:
+            self._driver.screenshot(picture_file)
+            allure.attach(open(picture_file, 'rb').read(),
+                          'Fail Screenshot',
+                          attachment_type=allure.attachment_type.PNG)
+            self._log.info('screenshot success')
+            os.remove(picture_file)
+        except Exception as e:
+            self._log.exception('screenshot fail')
+            raise e

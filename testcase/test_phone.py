@@ -1,6 +1,5 @@
-import sys
+import allure
 
-sys.path.append('..')
 from page.home_page import Home
 
 import pytest
@@ -11,14 +10,20 @@ class TestPhone:
     def setup(self):
         self.home = Home()
 
-    @pytest.mark.skip()
+    # @pytest.mark.skip()
+    @allure.title('新建联系人') #测试方法
+    @allure.severity(allure.severity_level.CRITICAL)
+    @allure.suite("测试电话") #测试模块
+    @allure.story('story----')
+    @allure.parent_suite('parent_suite')
+    @allure.sub_suite('sub_suite')
     def test_create_contact(self):
         """
         1.桌面点击phone
         2.点击contacts
-        3。点击创建联系人
-        4。输入联系人信息
-        5。保存
+        3.点击创建联系人
+        4.输入联系人信息
+        5.保存
         :return:
         """
         creat_page = self.home.goto_phone_recents() \

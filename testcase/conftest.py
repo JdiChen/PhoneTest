@@ -1,21 +1,19 @@
-import sys, pytest
-
-sys.path.append('..')
-
+import pytest
+from _pytest import config
+# 此处在导入的时候就会新建base_page模块中的全局变量
 from page import base_page
-
 from config.depend import get_all_adb_devices
 
 
 def pytest_addoption(parser):
     """
+    会话前调用
     向pytest命令行添加自定义参数
     :param parser:
     :return:
     """
     parser.addoption("--sn",
                      help='test device')
-
 
 @pytest.fixture(scope='session',
                 autouse=True
@@ -35,4 +33,4 @@ def get_cmd_device(request):
                            'please specify the serial number by --sn=device')
     elif base_page.SN is None and len(deivces) == 1:
         base_page.SN = deivces[0]
-    return base_page.SN
+    # return SN
