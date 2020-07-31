@@ -1,4 +1,5 @@
 # PhoneTest
+[toc]
 # 1.整体概述
 
 本篇以android原生phone应用调用google contact应用新建联系人为例
